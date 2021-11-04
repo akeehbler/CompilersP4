@@ -4,6 +4,7 @@
  * This class is used to generate warning and fatal error messages.
  */
 class ErrMsg {
+		// TODO MODIFY THIS CLASS
     /**
      * Generates a fatal error message.
      * @param lineNum line number for error location

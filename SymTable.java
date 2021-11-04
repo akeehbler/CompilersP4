@@ -3,31 +3,31 @@ import java.util.*;
 public class SymTable {
     private List<HashMap<String, Sym>> list;
     
+		// Constructor
     public SymTable() {
         list = new LinkedList<HashMap<String, Sym>>();
         list.add(new HashMap<String, Sym>());
     }
     
-    public void addDecl(String name, Sym sym) 
-	throws DuplicateSymException, EmptySymTableException, WrongArgumentException {
-	if (name == null && sym == null) {
-	    throw new WrongArgumentException("Arguments name and sym are null.");
-	}
-	else if (name == null) {
-	    throw new WrongArgumentException("Argument name is null.");
-	}
-	else if (sym == null) {
-	    throw new WrongArgumentException("Argument sym is null.");
-	}
+    public void addDecl(String name, Sym sym) throws DuplicateSymException, EmptySymTableException, WrongArgumentException {
+		if (name == null && sym == null) {
+	    	throw new WrongArgumentException("Arguments name and sym are null.");
+		}
+		else if (name == null) {
+	    	throw new WrongArgumentException("Argument name is null.");
+		}
+		else if (sym == null) {
+	   		throw new WrongArgumentException("Argument sym is null.");
+		}
                
         if (list.isEmpty()) {
             throw new EmptySymTableException();
         }
 	
         HashMap<String, Sym> symTab = list.get(0);
-        if (symTab.containsKey(name))
+        if (symTab.containsKey(name)) {
             throw new DuplicateSymException();
-        
+				}
         symTab.put(name, sym);
     }
     
