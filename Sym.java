@@ -76,11 +76,15 @@ class StructDefSym extends Sym {
 // TODO Implement this class
 class StructDeclSym extends Sym {
 
-    StructDefSym body;
+    private StructDefSym body;
 
     public StructDeclSym(StructDefSym body, String type, String name) {
         super(type, name);
         this.body = body;
     }
+    public StructDefSym getBody(){
+        return this.body;
+    }
+    
      
 }

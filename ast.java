@@ -275,17 +275,17 @@ class VarDeclNode extends DeclNode {
 	public void analyze(SymTable table) {
         // void check
 		if (myType instanceof VoidNode) {
-            ErrMsg.badVoid(...);
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
             return;
         }
         // if it is a struct
         else if (myType instanceof StructNode) {
             String structId = ((StructNode)myType).toString();
             if (table.lookupGlobal(structId) == null) {
-                ErrMsg.undeclared(...);
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier");
                 return;
             } else if (table.lookupGlobal(structId).getType().equals("struct")) {
-                    ErrMsg.badDecl(...);
+                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                     return;
             } else {
                 StructDefSym structDefSym = (StructDefSym)(table.lookupGlobal(structId));
@@ -293,7 +293,7 @@ class VarDeclNode extends DeclNode {
                 try {
                     table.addDecl(myId.toString(), structDeclSym);
                 } catch (DuplicateSymException e) {
-                    ErrMsg.duplicate(...);
+                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
                 } catch (EmptySymTableException e) {
                     System.err.println("Undefined scope.");
                 } catch (WrongArgumentException e) {
@@ -306,7 +306,7 @@ class VarDeclNode extends DeclNode {
                 table.addDecl(myId.toString(), new Sym(myId.toString(), myType.getType()));
             } catch (DuplicateSymException e) {
                 // TODO Fix ErrMsg class
-                ErrMsg.duplicate(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier.");
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
                 System.err.println("No scope defined.");
             } catch (WrongArgumentException e) {
@@ -351,7 +351,7 @@ class FnDeclNode extends DeclNode {
         try {
             table.addDecl(myId.toString(), fnSym);
         } catch (DuplicateSymException e) {
-            ErrMsg.duplicate(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier.");
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
             System.err.println("No scope defined.");
         } catch (WrongArgumentException e) {
@@ -390,7 +390,7 @@ class FormalDeclNode extends DeclNode {
 
     public void analyze(SymTable table) {
         if (myType instanceof VoidNode) {
-            ErrMsg.badVoid(myId.getLineNum(), myId.getCharNum(), "Non-function declared void.");
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
             return;
         } else {
             try {
@@ -398,7 +398,7 @@ class FormalDeclNode extends DeclNode {
                 FnSym sym = (FnSym)table.lookupLocal(myId.toString());
                 sym.addParam(myType.toString());
             } catch (DuplicateSymException e) {
-                ErrMsg.duplicate(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier.");
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
                 System.err.println("Undefined scope.");
             } catch (WrongArgumentException e) {
@@ -436,7 +436,7 @@ class StructDeclNode extends DeclNode {
         try {
             table.addDecl(myId.toString(), structDefSym);
         } catch (DuplicateSymException e) {
-            ErrMsg.duplicate(...);
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
             System.err.println("Undefined scope.");
         } catch (WrongArgumentException e) {
@@ -623,6 +623,10 @@ class IfStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void analyze(SymTable table){
+        //TODO: LEFT OFF HERE
+    }
+
     // e kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -657,6 +661,29 @@ class IfElseStmtNode extends StmtNode {
         p.println("}");        
     }
 
+    public void analyze(SymTable table){
+        myExp.analyze(table);
+        table.addScope();
+        myThenDeclList.analyze(table);
+        myThenStmtList.analyze(table);
+
+        try{
+            table.removeScope();
+        }catch(EmptySymTableException ex){
+            System.err.println("There is no scope");
+        }
+
+        table.addScope();
+        myElseDeclList.analyze(table);
+        myElseStmtList.analyze(table);
+
+        try{
+            table.removeScope();
+        }catch(EmptySymTableException ex){
+            System.err.println("There is no scope");
+        }
+    }
+
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
@@ -683,6 +710,18 @@ class WhileStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void analyze(SymTable table){
+        myExp.analyze(table);
+        table.addScope();
+        myDeclList.analyze(table);
+        myStmtList.analyze(table);
+        try{
+            table.removeScope();
+        }catch(EmptySymTableException ex){
+            //TODO: should this be a warning?
+            System.err.println("There is no scope.");
+        }
+    }
     // 3 kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -697,7 +736,7 @@ class RepeatStmtNode extends StmtNode {
     }
 	
     public void unparse(PrintWriter p, int indent) {
-	addIndent(p, indent);
+	    addIndent(p, indent);
         p.print("repeat (");
         myExp.unparse(p, 0);
         p.println(") {");
@@ -705,6 +744,19 @@ class RepeatStmtNode extends StmtNode {
         myStmtList.unparse(p, indent+4);
         addIndent(p, indent);
         p.println("}");
+    }
+
+    public void analyze(SymTable table){
+        myExp.analyze(table);
+        table.addScope();
+        myDeclList.analyze(table);
+        myStmtList.analyze(table);
+        try{
+            table.removeScope();
+        }catch(EmptySymTableException ex){
+            //TODO: Should this be a warning?
+            System.err.println("There is no scope.");
+        }
     }
 
     // 3 kids
@@ -722,6 +774,10 @@ class CallStmtNode extends StmtNode {
         addIndent(p, indent);
         myCall.unparse(p, indent);
         p.println(";");
+    }
+
+    public void analyze(SymTable table){
+        myCall.analyze(table);
     }
 
     // 1 kid
@@ -743,6 +799,13 @@ class ReturnStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void analyze(SymTable table){
+        //Check for null since it can be Null
+        if(myExp != null){
+            myExp.analyze(table);
+        }
+    }
+
     // 1 kid
     private ExpNode myExp; // possibly null
 }
@@ -753,6 +816,7 @@ class ReturnStmtNode extends StmtNode {
 
 abstract class ExpNode extends ASTnode {
     // abstract public String toString();
+    abstract public void analyze(SymTable table);
 }
 
 class IntLitNode extends ExpNode {
@@ -768,6 +832,10 @@ class IntLitNode extends ExpNode {
 
     public String toString() {
         return myIntVal + "";
+    }
+
+    public void analyze(SymTable table){
+        //Do nothing since members don't need analysis
     }
 
     private int myLineNum;
@@ -790,6 +858,10 @@ class StringLitNode extends ExpNode {
         return myStrVal;
     }
 
+    public void analyze(SymTable table){
+        //Do nothing since members don't need analysis
+    }
+
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -809,6 +881,10 @@ class TrueNode extends ExpNode {
         return "true";
     }
 
+    public void analyze(SymTable table){
+        //Do nothing since members don't need analysis
+    }
+
     private int myLineNum;
     private int myCharNum;
 }
@@ -825,6 +901,10 @@ class FalseNode extends ExpNode {
 
     public String toString() {
         return "false";
+    }
+
+    public void analyze(SymTable table){
+        //Do nothing since members don't need analysis
     }
 
     private int myLineNum;
@@ -867,7 +947,7 @@ class IdNode extends ExpNode {
             return;
         } 
 
-        // if it wasn't found, check local table
+        // if it wasn't found, check global table
         foundSym = table.lookupGlobal(this.myStrVal);
         if (foundSym != null) {
             this.link = foundSym;
@@ -875,7 +955,7 @@ class IdNode extends ExpNode {
         }
 
         // if it still wasnt found throw and error
-        ErrMsg.undeclared(this.myLineNum, this.myCharNum, "Undeclared identifier");
+        ErrMsg.fatal(this.myLineNum, this.myCharNum, "Undeclared identifier");
     }
 
     private int myLineNum;
@@ -901,6 +981,10 @@ class DotAccessExpNode extends ExpNode {
         return ".";
     }
 
+    public void analyze(SymTable table){
+        //TODO: this has a lot to be done left
+    }
+
     // 2 kids
     private ExpNode myLoc;    
     private IdNode myId;
@@ -922,6 +1006,11 @@ class AssignNode extends ExpNode {
 
     public String toString() {
         return "=";
+    }
+    
+    public void analyze(SymTable table){
+        myLhs.analyze(table);
+        myExp.analyze(table);
     }
 
     // 2 kids
@@ -949,6 +1038,12 @@ class CallExpNode extends ExpNode {
         }
         p.print(")");
     }
+    public void analyze(SymTable table){
+        myId.analyze(table);
+        if(myExpList != null){
+            myExpList.analyze(table);
+        }
+    }
 
     // 2 kids
     private IdNode myId;
@@ -960,6 +1055,9 @@ abstract class UnaryExpNode extends ExpNode {
         myExp = exp;
     }
 
+    public void analyze(SymTable table){
+        myExp.analyze(table);
+    }
     // one child
     protected ExpNode myExp;
 }
@@ -972,7 +1070,7 @@ abstract class BinaryExpNode extends ExpNode {
     
     public void analyze(SymTable table){
         myExp1.analyze(table);
-        myExp2.anaylze(table);
+        myExp2.analyze(table);
     }
     // two kids
     protected ExpNode myExp1;
