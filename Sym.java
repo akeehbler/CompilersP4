@@ -46,22 +46,22 @@ class FnSym extends Sym {
     }
 
     public String toString(){
-        String format = "Type: " + getType() + " | " + "Name: " + getName() + " | " + "Return Type: " + getRetType();
+        String format = "";
         if(getParamNum() != 0){
-            format += "Parameter Types: ";
             for(int i = 0; i < getParamNum(); i++){
                 format += paramTypes.get(i);
                 if(i != getParamNum() - 1){
-                    format += " | ";
+                    format += ", ";
                 }
             }
-        } 
+        }
+        format += " -> " + getRetType(); 
         return format;
     }
 
 }
 
-// TODO Implement this class
+
 class StructDefSym extends Sym {
 
     private SymTable table;
@@ -70,10 +70,14 @@ class StructDefSym extends Sym {
         super(type, name);
         this.table = table;
     }
+
+    public SymTable getTable() {
+        return this.table;
+    }
      
 }
 
-// TODO Implement this class
+
 class StructDeclSym extends Sym {
 
     private StructDefSym body;

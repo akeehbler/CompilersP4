@@ -187,9 +187,9 @@ class FormalsListNode extends ASTnode {
         } 
     }
 
-    public void analyze(SymTable table, FnSym sym) {
+    public void analyze(SymTable table) {
         for (FormalDeclNode fdl : myFormals) {
-            fdl.analyze(table, sym);
+            fdl.analyze(table);
         }
     }
 
@@ -206,6 +206,11 @@ class FnBodyNode extends ASTnode {
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
         myStmtList.unparse(p, indent);
+    }
+
+    public void analyze(SymTable table) {
+        myDeclList.analyze(table);
+        myStmtList.analyze(table);
     }
 
     // 2 kids
@@ -256,6 +261,18 @@ class ExpListNode extends ASTnode {
                 it.next().unparse(p, indent);
             }
         } 
+    }
+
+    public void analyze(SymTable table){
+        Iterator<ExpNode> it = myExps.iterator();
+        try{
+            while(it.hasNext()){
+                ((ExpNode)it.next()).analyze(table);
+            }
+        } catch (NoSuchElementException ex){
+            System.err.println("Unexcpected NoSuchElementException in ExpNode.");
+            System.exit(-1);
+        }
     }
 
     // list of kids (ExpNodes)
@@ -964,7 +981,12 @@ class IdNode extends ExpNode {
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
         if (this.link != null) {
-            p.print("(" + link.getType() + ")");
+            if(this.link instanceof FnSym){
+                p.print("(" + this.link.toString() + ")");
+            }
+            else{
+                p.print("(" + link.getType() + ")");
+            }
         }
     }
 
@@ -979,6 +1001,10 @@ class IdNode extends ExpNode {
     public int getCharNum() {
         return myCharNum;
     } 
+
+    public void setForDot(Sym sym) {
+        this.link = sym;
+    }
 
     // Doing linking here
     public void analyze(SymTable table) {
@@ -1024,12 +1050,60 @@ class DotAccessExpNode extends ExpNode {
     }
 
     public void analyze(SymTable table){
-        //TODO: this has a lot to be done left
+        myLoc.analyze(table);
+        Sym foundSym = table.lookupGlobal(myLoc.toString());
+        if (myLoc instanceof IdNode) {
+            if (foundSym == null || !(foundSym instanceof StructDeclSym)) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
+                return;
+            } else {
+                StructDeclSym structDeclSym = (StructDeclSym)foundSym;
+                StructDefSym structDefSym = structDeclSym.getBody();
+                SymTable st = structDefSym.getTable();
+                Sym memberSym = st.lookupLocal(myId.toString());
+                if (memberSym == null) {
+                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
+                    return;
+                }
+
+                if (memberSym instanceof Sym) {
+                    myId.setForDot(memberSym);
+                }
+
+                if (memberSym instanceof StructDeclSym) {
+                    this.prev = (StructDeclSym)memberSym;
+                    myId.setForDot((StructDeclSym)memberSym);
+                }
+            }
+        } else if (myLoc instanceof DotAccessExpNode) {
+            StructDeclSym structDeclSym = ((DotAccessExpNode)myLoc).prev;
+            StructDefSym structDefSym = structDeclSym.getBody();
+            SymTable structTable = structDefSym.getTable();
+            Sym localSym = structTable.lookupLocal(myId.toString());
+            if (localSym == null) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
+                return;
+            }
+            if (localSym instanceof Sym) {
+                myId.setForDot(localSym);
+            }
+
+            if (localSym instanceof StructDeclSym) {
+                this.prev = (StructDeclSym)localSym;
+                myId.setForDot((StructDeclSym)localSym);
+
+
+            }
+        }
+
+
+
     }
 
     // 2 kids
     private ExpNode myLoc;    
     private IdNode myId;
+    private StructDeclSym prev;
 }
 
 class AssignNode extends ExpNode {
