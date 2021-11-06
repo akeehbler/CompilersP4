@@ -424,9 +424,11 @@ class FormalDeclNode extends DeclNode {
             return;
         } else {
             try {
-                table.addDecl(myId.toString(), new Sym(myType.toString(), myId.toString()));
-                FnSym sym = (FnSym)table.lookupLocal(myId.toString());
-                sym.addParam(myType.toString());
+                // this var doesnt get used, it is just to check to see if lookupLocal throws an exception
+                Sym sym = table.lookupLocal(myId.toString());
+                sym = new Sym(myType.toString(), myId.toString());
+                table.addDecl(myId.toString(), sym);
+                //((FnSym)sym).addParam(myType.toString());
             } catch (DuplicateSymException e) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
