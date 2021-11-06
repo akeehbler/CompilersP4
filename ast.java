@@ -161,9 +161,13 @@ class DeclListNode extends ASTnode {
         }
     }
 
-	public void analyze(SymTable table) {
+    public void analyze(SymTable table) {
+        this.analyze(table, table);
+    }
+
+	public void analyze(SymTable structTable, SymTable table) {
 		for (DeclNode dn : myDecls) {
-			dn.analyze(table);
+			dn.analyze(structTable, table);
 		}
 	}
 
@@ -231,15 +235,8 @@ class StmtListNode extends ASTnode {
     }
 
     public void analyze(SymTable table){
-        Iterator<StmtNode> it = myStmts.iterator();
-        try{
-            while(it.hasNext()){
-                ((StmtNode)it.next()).analyze(table);
-            }
-        } catch(NoSuchElementException ex){
-            //TODO: Is this correct?
-            System.err.println("Unexpected NoSuchElementException in stmtNode");
-            System.exit(-1);
+        for (StmtNode sn : myStmts) {
+            sn.analyze(table);
         }
     }
 
@@ -264,14 +261,8 @@ class ExpListNode extends ASTnode {
     }
 
     public void analyze(SymTable table){
-        Iterator<ExpNode> it = myExps.iterator();
-        try{
-            while(it.hasNext()){
-                ((ExpNode)it.next()).analyze(table);
-            }
-        } catch (NoSuchElementException ex){
-            System.err.println("Unexcpected NoSuchElementException in ExpNode.");
-            System.exit(-1);
+        for(ExpNode node : myExps){
+            node.analyze(table);
         }
     }
 
@@ -302,7 +293,11 @@ class VarDeclNode extends DeclNode {
         p.println(";");
     }
 
-	public void analyze(SymTable table) {
+    public void analyze(SymTable table) {
+        this.analyze(table, table);
+    }
+
+	public void analyze(SymTable structTable, SymTable table) {
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -462,11 +457,14 @@ class StructDeclNode extends DeclNode {
     }
 
     public void analyze(SymTable table) {
-        SymTable structTable = new SymTable();
-        myDeclList.analyze(structTable);
-        StructDefSym structDefSym = new StructDefSym(structTable, "structDecl", myId.toString());
         try {
+            // not used, just to look for duplicate sym
+            Sym symCheck = table.lookupLocal(myId.toString());
+            SymTable structTable = new SymTable();
+            myDeclList.analyze(structTable, table);
+            StructDefSym structDefSym = new StructDefSym(structTable, myId.toString(), "struct");
             table.addDecl(myId.toString(), structDefSym);
+            // todo maybe should link symbols here instead of IdNode analyze
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
@@ -684,7 +682,8 @@ class IfStmtNode extends StmtNode {
         try{
             table.removeScope();
         } catch(EmptySymTableException ex){
-            System.err.println("There is no scope.");
+            System.err.println("Undefined Scope in IfStmtNode analysis.");
+            System.exit(-1);
         }
     }
 
@@ -731,7 +730,8 @@ class IfElseStmtNode extends StmtNode {
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
-            System.err.println("There is no scope");
+            System.err.println("Undefined Scope in IfElseStmtNode analysis");
+            System.exit(-1);
         }
 
         table.addScope();
@@ -741,7 +741,8 @@ class IfElseStmtNode extends StmtNode {
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
-            System.err.println("There is no scope");
+            System.err.println("Undefined Scope in IfElseStmtNode analysis");
+            System.exit(-1);
         }
     }
 
@@ -779,8 +780,8 @@ class WhileStmtNode extends StmtNode {
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
-            //TODO: should this be a warning?
-            System.err.println("There is no scope.");
+            System.err.println("Undefined Scope in WhileStmtNode analysis.");
+            System.exit(-1);
         }
     }
     // 3 kids
@@ -815,8 +816,8 @@ class RepeatStmtNode extends StmtNode {
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
-            //TODO: Should this be a warning?
-            System.err.println("There is no scope.");
+            System.err.println("Undefined Scope in RepeatStmtNode analysis.");
+            System.exit(-1);
         }
     }
 
