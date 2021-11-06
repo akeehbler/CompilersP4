@@ -167,7 +167,11 @@ class DeclListNode extends ASTnode {
 
 	public void analyze(SymTable structTable, SymTable table) {
 		for (DeclNode dn : myDecls) {
-			dn.analyze(structTable, table);
+            if (dn instanceof VarDeclNode) {
+                ((VarDeclNode)dn).analyze(structTable, table);
+            } else {
+                dn.analyze(table);
+            }
 		}
 	}
 
