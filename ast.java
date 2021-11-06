@@ -302,6 +302,7 @@ class VarDeclNode extends DeclNode {
     }
 
 	public void analyze(SymTable structTable, SymTable table) {
+        boolean badDecl = false;
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -310,36 +311,37 @@ class VarDeclNode extends DeclNode {
         // if it is a struct
         else if (myType instanceof StructNode) {
             String structId = ((StructNode)myType).toString();
-            if (table.lookupGlobal(structId) == null) {
-                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier(VarDeclNode)");
-                return;
-            } else if (table.lookupGlobal(structId).getType().equals("struct")) {
-                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
-                    return;
+            Sym foundSym = table.lookupGlobal(structId);
+            if (foundSym == null || !(foundSym instanceof StructDefSym)) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
+                badDecl = true;
             } else {
-                StructDefSym structDefSym = (StructDefSym)(table.lookupGlobal(structId));
-                StructDeclSym structDeclSym = new StructDeclSym(structDefSym, structId, myType.toString());
+                // TODO link here?
+            }
+
+            Sym sym = structTable.lookupLocal(myId.toString());
+            if (sym == null) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+                badDecl = true;
+            }
+
+            if (!badDecl) {
                 try {
-                    table.addDecl(myId.toString(), structDeclSym);
+                    if (myType instanceof StructNode) {
+                        sym = new StructDeclSym((StructDefSym)foundSym, myType.toString(), "struct");
+                    } 
+                    structTable.addDecl(myId.toString(), sym);
+                    // todo link again?
                 } catch (DuplicateSymException e) {
                     ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+                    System.exit(-1);
                 } catch (EmptySymTableException e) {
                     System.err.println("Undefined scope.");
+                    System.exit(-1);
                 } catch (WrongArgumentException e) {
                     System.err.println(e.getMessage());
+                    System.exit(-1);
                 }
-            }
-        // if it is a variable decl
-        } else {     
-             try {
-                table.addDecl(myId.toString(), new Sym(myId.toString(), myType.getType()));
-            } catch (DuplicateSymException e) {
-                // TODO Fix ErrMsg class
-                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
-            } catch (EmptySymTableException e) {
-                System.err.println("No scope defined.");
-            } catch (WrongArgumentException e) {
-                System.err.println(e.getMessage());
             }
         }
     }
