@@ -225,6 +225,19 @@ class StmtListNode extends ASTnode {
         }
     }
 
+    public void analyze(SymTable table){
+        Iterator<StmtNode> it = myStmts.iterator();
+        try{
+            while(it.hasNext()){
+                ((StmtNode)it.next()).analyze(table);
+            }
+        } catch(NoSuchElementException ex){
+            //TODO: Is this correct?
+            System.err.println("Unexpected NoSuchElementException in stmtNode");
+            System.exit(-1);
+        }
+    }
+
     // list of kids (StmtNodes)
     private List<StmtNode> myStmts;
 }
@@ -524,6 +537,7 @@ class StructNode extends TypeNode {
 // **********************************************************************
 
 abstract class StmtNode extends ASTnode {
+    abstract public void analyze(SymTable table);
 }
 
 class AssignStmtNode extends StmtNode {
@@ -535,6 +549,10 @@ class AssignStmtNode extends StmtNode {
         addIndent(p, indent);
         myAssign.unparse(p, -1); // no parentheses
         p.println(";");
+    }
+
+    public void analyze(SymTable table){
+        myAssign.analyze(table);
     }
 
     // 1 kid
@@ -553,6 +571,10 @@ class PreIncStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void analyze(SymTable table){
+        myExp.analyze(table);
+    }
+
     // 1 kid
     private ExpNode myExp;
 }
@@ -567,6 +589,10 @@ class PreDecStmtNode extends StmtNode {
 	p.print("--");
         myExp.unparse(p, 0);
         p.println(";");
+    }
+
+    public void analyze(SymTable table){
+        myExp.analyze(table);
     }
 
     // 1 kid
@@ -585,6 +611,10 @@ class ReceiveStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void analyze(SymTable table){
+        myExp.analyze(table);
+    }
+
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
     private ExpNode myExp;
 }
@@ -599,6 +629,10 @@ class PrintStmtNode extends StmtNode {
         p.print("print << ");
         myExp.unparse(p, 0);
         p.println(";");
+    }
+
+    public void analyze(SymTable table){
+        myExp.analyze(table);
     }
 
     // 1 kid
@@ -624,7 +658,15 @@ class IfStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
-        //TODO: LEFT OFF HERE
+        myExp.analyze(table);
+        table.addScope();
+        myDeclList.analyze(table);
+        myStmtList.analyze(table);
+        try{
+            table.removeScope();
+        } catch(EmptySymTableException ex){
+            System.err.println("There is no scope.");
+        }
     }
 
     // e kids
