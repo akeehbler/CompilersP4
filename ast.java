@@ -311,7 +311,7 @@ class VarDeclNode extends DeclNode {
         else if (myType instanceof StructNode) {
             String structId = ((StructNode)myType).toString();
             if (table.lookupGlobal(structId) == null) {
-                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier");
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier(VarDeclNode)");
                 return;
             } else if (table.lookupGlobal(structId).getType().equals("struct")) {
                     ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
@@ -1030,7 +1030,7 @@ class IdNode extends ExpNode {
         }
 
         // if it still wasnt found throw and error
-        ErrMsg.fatal(this.myLineNum, this.myCharNum, "Undeclared identifier");
+        ErrMsg.fatal(this.myLineNum, this.myCharNum, "Undeclared identifier (IDNODE)");
     }
 
     private int myLineNum;
