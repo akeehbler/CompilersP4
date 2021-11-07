@@ -481,6 +481,7 @@ class StructDeclNode extends DeclNode {
             Sym symCheck = table.lookupLocal(myId.toString());
             SymTable structTable = new SymTable();
             myDeclList.analyze(structTable, table);
+            System.out.println(myId.toString());
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
             table.addDecl(myId.toString(), structDefSym);
             myId.addLink(structDefSym);
