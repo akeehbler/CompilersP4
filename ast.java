@@ -338,8 +338,7 @@ class VarDeclNode extends DeclNode {
         try {
             if (myType instanceof StructNode) {
                 // TODO Fix this
-                System.out.println("Piss :" + myId.toString() + " | " + ((StructNode)myType).getId().toString());
-                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType());
+                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType().toString());
             } else {
                 sym = new Sym(myType.getType());
             }
