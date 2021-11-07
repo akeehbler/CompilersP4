@@ -3,15 +3,9 @@ import java.util.ArrayList;
 
 public class Sym {
     private String type;
-    private String name;
 
-    public Sym(String type, String name) {
+    public Sym(String type) {
         this.type = type;
-        this.name = name;
-    }
-    
-    public String getName() {
-        return name;
     }
 
     public String getType() {
@@ -19,26 +13,25 @@ public class Sym {
     }
     
     public String toString() {
-        return type + " | " + name;
+        return type.toString();
     }
 }
 
 class FnSym extends Sym {
-    private List<String> paramTypes;
+    private List<String> formals;
     private String retType;
 
-    public FnSym(String retType, String name) {
-        super("Function", name);
-        this.retType = retType;
-        this.paramTypes = new ArrayList<String>();
+    public FnSym(String retType) {
+        super(retType);
+        this.formals = new ArrayList<String>();
     }
     
-    public int getParamNum() {
-        return paramTypes.size();
+    public int getFormalsNum() {
+        return formals.size();
     }
 
-    public void addParam(String type) {
-        this.paramTypes.add(type);
+    public void addFormals(String type) {
+        this.formals.add(type);
     }
 
     public String getRetType() {
@@ -47,10 +40,10 @@ class FnSym extends Sym {
 
     public String toString(){
         String format = "";
-        if(getParamNum() != 0){
-            for(int i = 0; i < getParamNum(); i++){
-                format += paramTypes.get(i);
-                if(i != getParamNum() - 1){
+        if(getFormalsNum() != 0){
+            for(int i = 0; i < getFormalsNum(); i++){
+                format += formals.get(i);
+                if(i != getFormalsNum() - 1){
                     format += ", ";
                 }
             }
@@ -66,8 +59,8 @@ class StructDefSym extends Sym {
 
     private SymTable table;
 
-    public StructDefSym(SymTable table, String type, String name) {
-        super(type, name);
+    public StructDefSym(SymTable table, String type) {
+        super(type);
         this.table = table;
     }
 
@@ -82,13 +75,12 @@ class StructDeclSym extends Sym {
 
     private StructDefSym body;
 
-    public StructDeclSym(StructDefSym body, String type, String name) {
-        super(type, name);
+    public StructDeclSym(StructDefSym body, String type) {
+        super(type);
         this.body = body;
     }
     public StructDefSym getBody(){
         return this.body;
     }
-    
      
 }

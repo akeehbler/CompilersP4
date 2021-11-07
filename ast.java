@@ -113,9 +113,6 @@ abstract class ASTnode {
     // every subclass must provide an unparse operation
     abstract public void unparse(PrintWriter p, int indent);
 
-		// TODO I think every subclass must provide a analyze method
-		//abstract public void analyze(SymTable table);
-
     // this method can be used by the unparse methods to do indenting
     protected void addIndent(PrintWriter p, int indent) {
         for (int k = 0; k < indent; k++) p.print(" ");
@@ -303,6 +300,7 @@ class VarDeclNode extends DeclNode {
 
 	public void analyze(SymTable structTable, SymTable table) {
         boolean badDecl = false;
+        Sym sym;
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -316,10 +314,10 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 badDecl = true;
             } else {
-                // TODO link here?
+                myId.addLink(foundSym);
             }
 
-            Sym sym = structTable.lookupLocal(myId.toString());
+            sym = structTable.lookupLocal(myId.toString());
             if (sym == null) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
                 badDecl = true;
@@ -328,10 +326,12 @@ class VarDeclNode extends DeclNode {
             if (!badDecl) {
                 try {
                     if (myType instanceof StructNode) {
-                        sym = new StructDeclSym((StructDefSym)foundSym, myType.toString(), "struct");
-                    } 
+                        sym = new StructDeclSym((StructDefSym)foundSym, myType.toString());
+                    } else {
+                        sym = new Sym(myType.toString());
+                    }
                     structTable.addDecl(myId.toString(), sym);
-                    // todo link again?
+                    myId.addLink(sym);
                 } catch (DuplicateSymException e) {
                     ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
                     System.exit(-1);
@@ -378,7 +378,7 @@ class FnDeclNode extends DeclNode {
     }
 
     public void analyze(SymTable table) {
-        FnSym fnSym = new FnSym(myType.toString(), myId.toString());
+        FnSym fnSym = new FnSym(myType.toString());
         try {
             table.addDecl(myId.toString(), fnSym);
         } catch (DuplicateSymException e) {
@@ -427,7 +427,7 @@ class FormalDeclNode extends DeclNode {
             try {
                 // this var doesnt get used, it is just to check to see if lookupLocal throws an exception
                 Sym sym = table.lookupLocal(myId.toString());
-                sym = new Sym(myType.toString(), myId.toString());
+                sym = new Sym(myType.toString());
                 table.addDecl(myId.toString(), sym);
                 //((FnSym)sym).addParam(myType.toString());
             } catch (DuplicateSymException e) {
@@ -468,9 +468,9 @@ class StructDeclNode extends DeclNode {
             Sym symCheck = table.lookupLocal(myId.toString());
             SymTable structTable = new SymTable();
             myDeclList.analyze(structTable, table);
-            StructDefSym structDefSym = new StructDefSym(structTable, myId.toString(), "struct");
+            StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
             table.addDecl(myId.toString(), structDefSym);
-            // todo maybe should link symbols here instead of IdNode analyze
+            myId.addLink(structDefSym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
@@ -990,12 +990,8 @@ class IdNode extends ExpNode {
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
         if (this.link != null) {
-            if(this.link instanceof FnSym){
-                p.print("(" + this.link.toString() + ")");
-            }
-            else{
-                p.print("(" + link.getType() + ")");
-            }
+            p.print("(" + link + ")");
+            
         }
     }
 
@@ -1017,22 +1013,16 @@ class IdNode extends ExpNode {
     
     // Doing linking here
     public void analyze(SymTable table) {
-        // check local table
-        Sym foundSym = table.lookupLocal(this.myStrVal);
-        if (foundSym != null) {
-            this.link = foundSym;
-            return;
-        } 
+        Sym foundSym = table.lookupGlobal(myStrVal);
+        if (foundSym == null) {
+            ErrMsg.fatal(this.myLineNum, this.myCharNum, "Undeclared identifier");
+        } else {
+            addLink(foundSym);
+        }        
+    }
 
-        // if it wasn't found, check global table
-        foundSym = table.lookupGlobal(this.myStrVal);
-        if (foundSym != null) {
-            this.link = foundSym;
-            return;
-        }
-
-        // if it still wasnt found throw and error
-        ErrMsg.fatal(this.myLineNum, this.myCharNum, "Undeclared identifier (IDNODE)");
+    public void addLink(Sym linkSym) {
+        this.link = linkSym;
     }
 
     private int myLineNum;
