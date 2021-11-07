@@ -1071,6 +1071,7 @@ class DotAccessExpNode extends ExpNode {
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
             Sym idSym = ((IdNode)myLoc).getSym();
+            System.out.println(idSym.getType() + " | " + idSym.toString());
             if (idSym == null) {
                 badDot = true;
             } else if (idSym instanceof StructDefSym) {
