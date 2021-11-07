@@ -338,7 +338,7 @@ class VarDeclNode extends DeclNode {
         try {
             if (myType instanceof StructNode) {
                 // TODO Fix this
-                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType());
+                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType().toString());
             } else {
                 sym = new Sym(myType.getType());
             }
@@ -483,6 +483,7 @@ class StructDeclNode extends DeclNode {
             SymTable structTable = new SymTable();
             myDeclList.analyze(structTable, table);
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
+            System.out.println(myId.toString() + "heree");
             table.addDecl(myId.toString(), structDefSym);
             myId.addLink(structDefSym);
         } catch (DuplicateSymException e) {
