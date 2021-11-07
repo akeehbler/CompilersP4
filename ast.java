@@ -311,8 +311,8 @@ class VarDeclNode extends DeclNode {
         else if (myType instanceof StructNode) {
             struct = ((StructNode)myType).getId();
             System.out.println(struct.toString());
+            System.out.println(table.toString());
             sym = globalTab.lookupGlobal(struct.toString());
-            System.out.println(sym.getTable().print());
             if (sym == null) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier");
                 return;
