@@ -332,8 +332,11 @@ class VarDeclNode extends DeclNode {
                 sym = new StructDeclSym(new StructDefSym(table, ((StructNode)myType).getType()), ((StructNode)myType).getType());
             } else {
                 sym = new Sym(myType.getType());
+                System.out.println("335");
             }
+            System.out.println("337");
             table.addDecl(myId.toString(), sym);
+            System.out.println("339");
             //myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException");
