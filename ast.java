@@ -193,9 +193,9 @@ class FormalsListNode extends ASTnode {
         } 
     }
 
-    public void analyze(SymTable table) {
+    public void analyze(SymTable table, FnSym sym) {
         for (FormalDeclNode fdl : myFormals) {
-            fdl.analyze(table);
+            fdl.analyze(table, sym);
         }
     }
 
@@ -332,12 +332,8 @@ class VarDeclNode extends DeclNode {
                 sym = new StructDeclSym(new StructDefSym(table, ((StructNode)myType).getType()), ((StructNode)myType).getType());
             } else {
                 sym = new Sym(myType.getType());
-                System.out.println("335");
             }
-            System.out.println("337");
             table.addDecl(myId.toString(), sym);
-            System.out.println("339");
-            //myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException");
             System.exit(-1);
@@ -395,7 +391,7 @@ class FnDeclNode extends DeclNode {
         }
 
         table.addScope();
-        myFormalsList.analyze(table);
+        myFormalsList.analyze(table, (FnSym)sym);
         myBody.analyze(table);
 
         try {
@@ -424,7 +420,9 @@ class FormalDeclNode extends DeclNode {
         myId.unparse(p, 0);
     }
 
-    public void analyze(SymTable table) {
+    public void analyze(SymTable table) {}
+
+    public void analyze(SymTable table, FnSym fnSym) {
         if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
             return;
@@ -434,7 +432,7 @@ class FormalDeclNode extends DeclNode {
                 Sym sym = table.lookupLocal(myId.toString());
                 sym = new Sym(myType.toString());
                 table.addDecl(myId.toString(), sym);
-                ((FnSym)sym).addFormals(myType.toString());
+                fnSym.addFormals(myType.toString());
             } catch (DuplicateSymException e) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
