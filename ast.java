@@ -306,15 +306,13 @@ class VarDeclNode extends DeclNode {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
             return;
         }
-        // if it is a struct
+        // if it is a struct check if its an invalid name
         else if (myType instanceof StructNode) {
             sym = globalTab.lookupGlobal(((StructNode)myType).getId().toString());
             if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
-            } else {
-                //(((StructNode)myType).getId()).addLink(sym);
-            }
+            } 
         }
 
         // check for multiply declared
@@ -329,20 +327,17 @@ class VarDeclNode extends DeclNode {
         try {
             if (myType instanceof StructNode) {
                 // TODO Fix this
-                sym = new StructDeclSym(new StructDefSym(table, ((StructNode)myType).getType()), ((StructNode)myType).getType());
+                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType());
             } else {
                 sym = new Sym(myType.getType());
             }
             table.addDecl(myId.toString(), sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException");
-            System.exit(-1);
         } catch (EmptySymTableException e) {
             System.err.println("Unexpected EmptySymTableException");
-            System.exit(-1);
         } catch (WrongArgumentException e) {
             System.err.println(e.getMessage());
-            System.exit(-1);
         }
     }
 

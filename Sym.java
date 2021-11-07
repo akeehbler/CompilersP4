@@ -54,6 +54,19 @@ class FnSym extends Sym {
 
 }
 
+class StructDeclSym extends Sym {
+
+    private StructDefSym body;
+
+    public StructDeclSym(StructDefSym body, String type) {
+        super(type);
+        this.body = body;
+    }
+    public StructDefSym getBody(){
+        return this.body;
+    }
+     
+}
 
 class StructDefSym extends Sym {
 
@@ -66,21 +79,6 @@ class StructDefSym extends Sym {
 
     public SymTable getTable() {
         return this.table;
-    }
-     
-}
-
-
-class StructDeclSym extends Sym {
-
-    private StructDefSym body;
-
-    public StructDeclSym(StructDefSym body, String type) {
-        super(type);
-        this.body = body;
-    }
-    public StructDefSym getBody(){
-        return this.body;
     }
      
 }
