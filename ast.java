@@ -1070,7 +1070,10 @@ class DotAccessExpNode extends ExpNode {
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
+            table.print();
             Sym idSym = table.lookupGlobal(myLoc.toString());
+            System.out.println(idSym.toString());
+            System.out.println(idSym.getType());
             if (idSym == null) {
                 badDot = true;
             } else if (idSym instanceof StructDefSym) {
