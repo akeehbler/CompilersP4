@@ -55,11 +55,12 @@ public class P4 {
         }
 
         // name analysis
-		SymTable table = new SymTable();
-		((ProgramNode)root.value).analyze(table);
+		((ProgramNode)root.value).analyze();
 
         // unparsing
-        ((ASTnode)root.value).unparse(outFile, 0);
+        if (!(ErrMsg.fatalCalled)) {
+            ((ASTnode)root.value).unparse(outFile, 0);
+        }
         outFile.close();
 
         return;

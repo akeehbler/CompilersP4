@@ -133,7 +133,8 @@ class ProgramNode extends ASTnode {
         myDeclList.unparse(p, indent);
     }
 
-    public void analyze(SymTable table) {
+    public void analyze() {
+        SymTable table = new SymTable();
 		myDeclList.analyze(table);
 	}
 
@@ -162,10 +163,10 @@ class DeclListNode extends ASTnode {
         this.analyze(table, table);
     }
 
-	public void analyze(SymTable structTable, SymTable table) {
+	public void analyze(SymTable table, SymTable globalTab) {
 		for (DeclNode dn : myDecls) {
             if (dn instanceof VarDeclNode) {
-                ((VarDeclNode)dn).analyze(structTable, table);
+                ((VarDeclNode)dn).analyze(table, globalTab);
             } else {
                 dn.analyze(table);
             }
@@ -298,9 +299,8 @@ class VarDeclNode extends DeclNode {
         this.analyze(table, table);
     }
 
-	public void analyze(SymTable structTable, SymTable table) {
-        boolean badDecl = false;
-        Sym sym;
+	public void analyze(SymTable table, SymTable globalTab) {
+        Sym sym = null;
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -308,41 +308,42 @@ class VarDeclNode extends DeclNode {
         }
         // if it is a struct
         else if (myType instanceof StructNode) {
-            String structId = ((StructNode)myType).toString();
-            Sym foundSym = table.lookupGlobal(structId);
-            if (foundSym == null || !(foundSym instanceof StructDefSym)) {
+            sym = globalTab.lookupGlobal(((StructNode)myType).getId().toString());
+            if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
-                badDecl = true;
+                return;
             } else {
-                myId.addLink(foundSym);
+                //(((StructNode)myType).getId()).addLink(sym);
             }
+        }
 
-            sym = structTable.lookupLocal(myId.toString());
-            if (sym == null) {
-                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
-                badDecl = true;
+        // check for multiply declared
+        sym = null;
+        sym = table.lookupLocal(myId.toString());
+        if (sym != null) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+            return;
+        }
+        
+        // if we havn't returned by now, it should be a good decl
+        try {
+            if (myType instanceof StructNode) {
+                // TODO Fix this
+                sym = new StructDeclSym(new StructDefSym(table, ((StructNode)myType).getType()), ((StructNode)myType).getType());
+            } else {
+                sym = new Sym(myType.getType());
             }
-
-            if (!badDecl) {
-                try {
-                    if (myType instanceof StructNode) {
-                        sym = new StructDeclSym((StructDefSym)foundSym, myType.toString());
-                    } else {
-                        sym = new Sym(myType.toString());
-                    }
-                    structTable.addDecl(myId.toString(), sym);
-                    myId.addLink(sym);
-                } catch (DuplicateSymException e) {
-                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
-                    System.exit(-1);
-                } catch (EmptySymTableException e) {
-                    System.err.println("Undefined scope.");
-                    System.exit(-1);
-                } catch (WrongArgumentException e) {
-                    System.err.println(e.getMessage());
-                    System.exit(-1);
-                }
-            }
+            table.addDecl(myId.toString(), sym);
+            //myId.addLink(sym);
+        } catch (DuplicateSymException e) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException");
+            System.exit(-1);
+        } catch (EmptySymTableException e) {
+            System.err.println("Unexpected EmptySymTableException");
+            System.exit(-1);
+        } catch (WrongArgumentException e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
     }
 
@@ -378,14 +379,15 @@ class FnDeclNode extends DeclNode {
     }
 
     public void analyze(SymTable table) {
-        FnSym fnSym = new FnSym(myType.toString());
+        Sym sym = new FnSym(myType.toString());
         try {
-            table.addDecl(myId.toString(), fnSym);
+            table.addDecl(myId.toString(), sym);
+            //myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
-            System.err.println("No scope defined.");
-        } catch (WrongArgumentException e) {
+            System.err.println("Undefined Scope in FnDeclNode analysis.");
+        } catch (WrongArgumentException e){
             System.err.println(e.getMessage());
         }
 
@@ -429,7 +431,7 @@ class FormalDeclNode extends DeclNode {
                 Sym sym = table.lookupLocal(myId.toString());
                 sym = new Sym(myType.toString());
                 table.addDecl(myId.toString(), sym);
-                //((FnSym)sym).addParam(myType.toString());
+                ((FnSym)sym).addFormals(myType.toString());
             } catch (DuplicateSymException e) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
@@ -470,7 +472,7 @@ class StructDeclNode extends DeclNode {
             myDeclList.analyze(structTable, table);
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
             table.addDecl(myId.toString(), structDefSym);
-            myId.addLink(structDefSym);
+            //myId.addLink(structDefSym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
@@ -785,7 +787,7 @@ class WhileStmtNode extends StmtNode {
         myStmtList.analyze(table);
         try{
             table.removeScope();
-        }catch(EmptySymTableException ex){
+        } catch(EmptySymTableException ex) {
             System.err.println("Undefined Scope in WhileStmtNode analysis.");
             System.exit(-1);
         }
@@ -1011,7 +1013,6 @@ class IdNode extends ExpNode {
         return link;
     }
     
-    // Doing linking here
     public void analyze(SymTable table) {
         Sym foundSym = table.lookupGlobal(myStrVal);
         if (foundSym == null) {
@@ -1023,6 +1024,10 @@ class IdNode extends ExpNode {
 
     public void addLink(Sym linkSym) {
         this.link = linkSym;
+    }
+
+    public Sym getLink() {
+        return this.link;
     }
 
     private int myLineNum;
