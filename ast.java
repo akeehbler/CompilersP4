@@ -338,7 +338,7 @@ class VarDeclNode extends DeclNode {
         try {
             if (myType instanceof StructNode) {
                 // TODO Fix this
-                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType().toString());
+                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType());
             } else {
                 sym = new Sym(myType.getType());
             }
@@ -1070,10 +1070,7 @@ class DotAccessExpNode extends ExpNode {
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
-            table.print();
-            Sym idSym = table.lookupGlobal(myLoc.toString());
-            System.out.println(idSym.toString());
-            System.out.println(idSym.getType());
+            Sym idSym = ((IdNode)myLoc).getSym();
             if (idSym == null) {
                 badDot = true;
             } else if (idSym instanceof StructDefSym) {
