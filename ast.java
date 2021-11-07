@@ -483,7 +483,7 @@ class StructDeclNode extends DeclNode {
             myDeclList.analyze(structTable, table);
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
             table.addDecl(myId.toString(), structDefSym);
-            //myId.addLink(structDefSym);
+            myId.addLink(structDefSym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
