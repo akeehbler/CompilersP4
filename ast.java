@@ -301,6 +301,7 @@ class VarDeclNode extends DeclNode {
 
 	public void analyze(SymTable table, SymTable globalTab) {
         Sym sym = null;
+        IdNode struct = null;
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -308,11 +309,20 @@ class VarDeclNode extends DeclNode {
         }
         // if it is a struct check if its an invalid name
         else if (myType instanceof StructNode) {
-            sym = globalTab.lookupGlobal(((StructNode)myType).getId().toString());
-            if (sym == null || !(sym instanceof StructDefSym)) {
+            struct = ((StructNode)myType).getId();
+            sym = globalTab.lookupGlobal(struct.toString());
+            if (sym == null) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier");
+                return;
+            }
+            else if(!(sym instanceof StructDefSym)){
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
-            } 
+            }
+            else{
+                //TODO: Do we actually link here or somewhere else?
+                struct.addLink(sym);
+            }
         }
 
         // check for multiply declared
@@ -332,12 +342,17 @@ class VarDeclNode extends DeclNode {
                 sym = new Sym(myType.getType());
             }
             table.addDecl(myId.toString(), sym);
+            //TODO: Do we actually link here?
+            myId.addLink(sym);
         } catch (DuplicateSymException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException");
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
+            System.exit(-1);
         } catch (EmptySymTableException e) {
-            System.err.println("Unexpected EmptySymTableException");
+            System.err.println("Unexpected EmptySymTableException in VarDeclNode analysis");
+            System.exit(-1);
         } catch (WrongArgumentException e) {
             System.err.println(e.getMessage());
+            System.exit(-1);
         }
     }
 
