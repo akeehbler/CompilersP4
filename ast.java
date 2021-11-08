@@ -337,6 +337,7 @@ class VarDeclNode extends DeclNode {
             } else {
                 sym = new Sym(myType.getType());
             }
+            System.out.println(myId.toString() + "peepee");
             table.addDecl(myId.toString(), sym);
             //TODO: Do we actually link here?
             myId.addLink(sym);
@@ -1101,7 +1102,9 @@ class DotAccessExpNode extends ExpNode {
                 badDot = true;
             } else {
                 // link the symbol?
+                myId.addLink(foundSym);
                 if (foundSym instanceof StructDeclSym) {
+                    //TODO: Proabaly need to fix this
                     prev = ((StructDeclSym)foundSym).getBody();
                 } 
             }
