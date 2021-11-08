@@ -311,13 +311,9 @@ class VarDeclNode extends DeclNode {
         else if (myType instanceof StructNode) {
             struct = ((StructNode)myType).getId();
             System.out.println(struct.toString());
-            System.out.println(globalTab.toString());
             sym = globalTab.lookupGlobal(struct.toString());
-            if (sym == null) {
-                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Undeclared identifier");
-                return;
-            }
-            else if(!(sym instanceof StructDefSym)){
+            System.out.println(sym.getClass());
+            if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }
@@ -484,7 +480,6 @@ class StructDeclNode extends DeclNode {
             SymTable structTable = new SymTable();
             myDeclList.analyze(structTable, table);
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
-            System.out.println(myId.toString() + "heree");
             table.addDecl(myId.toString(), structDefSym);
             myId.addLink(structDefSym);
         } catch (DuplicateSymException e) {
