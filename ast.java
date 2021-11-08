@@ -336,7 +336,7 @@ class VarDeclNode extends DeclNode {
                 System.out.println(struct.toString() + " herere");
                 System.out.println(myId.toString());
                 System.out.println(((StructNode)myType).getType().toString());
-                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType().toString());
+                sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 sym = new Sym(myType.getType());
             }
