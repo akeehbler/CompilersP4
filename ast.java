@@ -331,7 +331,9 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }else{
-               //table.add
+               if(!table.equals(globalTab)){
+                   struct.addLink(sym);
+               }
             }
         }
 
