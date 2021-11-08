@@ -349,7 +349,6 @@ class VarDeclNode extends DeclNode {
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
                 // TODO is this supposed to be globalTable.lookupGlobal????
-                System.out.println(struct.toString() + " yoyo");
                 table.print();
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
@@ -357,7 +356,6 @@ class VarDeclNode extends DeclNode {
                 sym = new Sym(myType.getType());
             }
             // add it to our current symTable
-            System.out.println("poop " + myId.toString());
             table.addDecl(myId.toString(), sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
@@ -1131,6 +1129,7 @@ class DotAccessExpNode extends ExpNode {
             if (idSym == null) {
                 badDot = true;
             } else if (idSym instanceof StructDeclSym) {
+                System.out.println(idSym.toString() + " boast");
                 structTable = ((StructDeclSym)idSym).getBody().getTable();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
@@ -1159,6 +1158,7 @@ class DotAccessExpNode extends ExpNode {
         }
 
         if (!badDot) {
+            System.out.println(myId.toString() + " toast");
             Sym foundSym = structTable.lookupGlobal(myId.toString());
             if (foundSym == null) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
