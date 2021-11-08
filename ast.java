@@ -1165,20 +1165,26 @@ class DotAccessExpNode extends ExpNode {
         }
 
         if (!badDot) {
+            //lookup the rhs 
             Sym foundSym = structTable.lookupGlobal(myId.toString());
             if (foundSym == null) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
                 badDot = true;
             } else {
-                myId.addLink(foundSym); //link the symbol since it was used
+                //myId.addLink(foundSym); //link the symbol since it was used
                 // Check if RHS is a struct, if it is then need to add this to allow chained
                 //Dot accesess
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
+                    foundSym = table.lookupGlobal(myId.toString());
+                    myId.addLink(foundSym);
                     prev = ((StructDeclSym)foundSym).getBody();
-                    if(((StructDeclSym)foundSym).getBody() == null){
+                    /*if(((StructDeclSym)foundSym).getBody() == null){
                         System.out.println(((StructDeclSym)foundSym).getType());
-                    }
+                    }*/
+                }
+                else{
+                    myId.addLink(foundSym);
                 } 
             }
         }
