@@ -1138,7 +1138,6 @@ class DotAccessExpNode extends ExpNode {
                 badDot = true;
             } else if (idSym instanceof StructDeclSym) { //Check is Id is declared of structType
                 structTable = ((StructDeclSym)idSym).getBody().getTable();
-                structTable.print();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
             }
@@ -1175,6 +1174,7 @@ class DotAccessExpNode extends ExpNode {
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
+                    ((StructDefSym)prev).getTable().print();
                 } 
             }
         }
