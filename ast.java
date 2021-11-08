@@ -310,9 +310,7 @@ class VarDeclNode extends DeclNode {
         // if it is a struct check if its an invalid name
         else if (myType instanceof StructNode) {
             struct = ((StructNode)myType).getId();
-            System.out.println(struct.toString());
             sym = globalTab.lookupGlobal(struct.toString());
-            System.out.println(sym.getClass());
             if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
@@ -1067,6 +1065,8 @@ class DotAccessExpNode extends ExpNode {
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
+            System.out.println(myLoc.toString() + "   What?");
+            System.out.println(myLoc.getClass());
             Sym idSym = ((IdNode)myLoc).getSym();
             if (idSym == null) {
                 badDot = true;
