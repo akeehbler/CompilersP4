@@ -1065,13 +1065,11 @@ class DotAccessExpNode extends ExpNode {
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
-            System.out.println(myLoc.toString() + "   What?");
             Sym idSym = ((IdNode)myLoc).getSym();
-            System.out.println(idSym.getClass());
             if (idSym == null) {
                 badDot = true;
-            } else if (idSym instanceof StructDefSym) {
-                structTable = (((StructDefSym)idSym).getTable());
+            } else if (idSym instanceof StructDeclSym) {
+                structTable = ((StructDeclSym)idSym).getBody().getTable();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
             }
