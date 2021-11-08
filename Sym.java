@@ -49,7 +49,7 @@ class FnSym extends Sym {
                 }
             }
         }
-        format += " -> " + getRetType(); 
+        format += "->" + getRetType(); 
         return format;
     }
 

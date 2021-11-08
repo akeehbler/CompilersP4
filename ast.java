@@ -338,7 +338,7 @@ class VarDeclNode extends DeclNode {
             }
             table.addDecl(myId.toString(), sym);
             //TODO: Do we actually link here?
-            myId.addLink(sym);
+            //myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
             System.exit(-1);
