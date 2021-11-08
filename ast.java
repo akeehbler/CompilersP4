@@ -1135,12 +1135,12 @@ class DotAccessExpNode extends ExpNode {
                 badDot = true;
             } else {
                 Sym locSym  = ((DotAccessExpNode)myLoc).getSym();
-                System.out.println(locSym.getType());
                 if (locSym == null) {
                     badDot = true;
                     //TODO: These might have to be the line and char num of the loc
                     //ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 } else {
+                    System.out.println(locSym.getType());
                     if (locSym instanceof StructDefSym) {
                         structTable = ((StructDefSym)locSym).getTable();
                     } else {
