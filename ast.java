@@ -349,6 +349,7 @@ class VarDeclNode extends DeclNode {
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
                 // TODO is this supposed to be globalTable.lookupGlobal????
+                System.out.println("here" + struct.toString());
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 // if its not create a new regular sym
@@ -1170,11 +1171,12 @@ class DotAccessExpNode extends ExpNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
                 badDot = true;
             } else {
-                myId.addLink(foundSym);
+                myId.addLink(foundSym); //link the symbol since it was used
+                // Check if RHS is a struct, if it is then need to add this to allow chained
+                //Dot accesess
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
-                    ((StructDefSym)prev).getTable().print();
                 } 
             }
         }
