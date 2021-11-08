@@ -1100,7 +1100,6 @@ class DotAccessExpNode extends ExpNode {
                 } else {
                     System.out.println(foundSym.toString());
                 }
-                System.out.println()
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
