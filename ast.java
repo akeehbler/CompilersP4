@@ -349,7 +349,7 @@ class VarDeclNode extends DeclNode {
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
                 // TODO is this supposed to be globalTable.lookupGlobal????
-                System.out.println(struct.toString() + " yoyo";
+                System.out.println(struct.toString() + " yoyo");
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 // if its not create a new regular sym
