@@ -349,7 +349,6 @@ class VarDeclNode extends DeclNode {
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
                 // TODO is this supposed to be globalTable.lookupGlobal????
-                table.print();
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 // if its not create a new regular sym
@@ -1167,7 +1166,7 @@ class DotAccessExpNode extends ExpNode {
                 myId.addLink(foundSym);
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
-                    prev = ((StructDeclSym)foundSym).getBody();
+                    prev = table.lookupGlobal(((StructDeclSym)foundSym).getBody().getType());
                 } 
             }
         }
