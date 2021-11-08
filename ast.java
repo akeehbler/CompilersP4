@@ -332,10 +332,6 @@ class VarDeclNode extends DeclNode {
         // if we havn't returned by now, it should be a good decl
         try {
             if (myType instanceof StructNode) {
-                // TODO Fix this
-                System.out.println(struct.toString() + " herere");
-                System.out.println(myId.toString());
-                System.out.println(((StructNode)myType).getType().toString());
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 sym = new Sym(myType.getType());
@@ -1106,7 +1102,7 @@ class DotAccessExpNode extends ExpNode {
                 // link the symbol?
                 myId.addLink(foundSym);
                 if (foundSym instanceof StructDeclSym) {
-                    //TODO: Proabaly need to fix this
+                    //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
                 } 
             }
