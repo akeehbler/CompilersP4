@@ -314,8 +314,6 @@ class VarDeclNode extends DeclNode {
             if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
-            } else{
-                struct.addLink(sym);
             }
         }
 
@@ -335,7 +333,6 @@ class VarDeclNode extends DeclNode {
                 sym = new Sym(myType.getType());
             }
             table.addDecl(myId.toString(), sym);
-            //myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
             System.exit(-1);
@@ -1071,9 +1068,11 @@ class DotAccessExpNode extends ExpNode {
             if (((DotAccessExpNode)myLoc).badDot) {
                 badDot = true;
             } else {
-                Sym locSym = prev;
-                if (prev == null) {
+                Sym locSym  = ((DotAccessExpNode)myLoc).getSym();
+                if (locSym == null) {
                     badDot = true;
+                    //TODO: These might have to be the line and char num of the loc
+                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 } else {
                     if (locSym instanceof StructDefSym) {
                         structTable = ((StructDefSym)locSym).getTable();
@@ -1103,6 +1102,9 @@ class DotAccessExpNode extends ExpNode {
         }
     }
 
+    public Sym getSym(){
+        return prev;
+    }
     // 2 kids
     private ExpNode myLoc;    
     private IdNode myId;
