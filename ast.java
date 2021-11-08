@@ -1122,6 +1122,9 @@ class DotAccessExpNode extends ExpNode {
     public void analyze(SymTable table){
         badDot = false;
         System.out.println(myLoc.getClass());
+        if(myLoc instanceof DotAccessExpNode){
+            System.out.println(((DotAccessExpNode)myLoc).getId().toString() + " middle");
+        }
         System.out.println(myId.toString());
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null; // For RHS dot-access
@@ -1176,7 +1179,10 @@ class DotAccessExpNode extends ExpNode {
     public Sym getSym(){
         return prev;
     }
-    // 2 kids
+    public IdNode getId(){
+        return myId;
+    }
+    // 4 kids
     private ExpNode myLoc;    
     private IdNode myId;
     private Sym prev;
