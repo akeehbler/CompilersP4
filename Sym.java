@@ -23,6 +23,7 @@ class FnSym extends Sym {
 
     public FnSym(String retType) {
         super(retType);
+        this.retType = retType;
         this.formals = new ArrayList<String>();
     }
     

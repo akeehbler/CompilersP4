@@ -383,11 +383,9 @@ class FnDeclNode extends DeclNode {
     }
 
     public void analyze(SymTable table) {
-        System.out.println(myType.getType() + " poop");
         Sym sym = new FnSym(myType.getType());
         try {
             table.addDecl(myId.toString(), sym);
-            myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
