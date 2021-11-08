@@ -335,6 +335,7 @@ class VarDeclNode extends DeclNode {
                 // TODO Fix this
                 System.out.println(struct.toString() + " herere");
                 System.out.println(myId.toString());
+                System.out.println(((StructNode)myType).getType().toString());
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType().toString());
             } else {
                 sym = new Sym(myType.getType());
@@ -1109,7 +1110,6 @@ class DotAccessExpNode extends ExpNode {
                     prev = ((StructDeclSym)foundSym).getBody();
                 } 
             }
-
         }
     }
 
