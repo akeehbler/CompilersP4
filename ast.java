@@ -1166,7 +1166,7 @@ class DotAccessExpNode extends ExpNode {
                 myId.addLink(foundSym);
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
-                    prev = table.lookupGlobal(((StructDeclSym)foundSym).getBody().getType());
+                    prev = structTable.lookupGlobal(((StructDeclSym)foundSym).getBody().getType());
                 } 
             }
         }
