@@ -331,9 +331,6 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }
-            else{
-                struct.addLink(sym);
-            }
         }
 
         // check if the identifier has been declared before in this scope
@@ -1122,6 +1119,8 @@ class DotAccessExpNode extends ExpNode {
 
     public void analyze(SymTable table){
         badDot = false;
+        System.out.println("Got here");
+        System.out.println(myLoc.getClass());
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
