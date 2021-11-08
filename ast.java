@@ -383,7 +383,7 @@ class FnDeclNode extends DeclNode {
     }
 
     public void analyze(SymTable table) {
-        Sym sym = new FnSym(myType.toString());
+        Sym sym = new FnSym(myType.getType());
         try {
             table.addDecl(myId.toString(), sym);
             //myId.addLink(sym);
@@ -435,9 +435,9 @@ class FormalDeclNode extends DeclNode {
             try {
                 // this var doesnt get used, it is just to check to see if lookupLocal throws an exception
                 Sym sym = table.lookupLocal(myId.toString());
-                sym = new Sym(myType.toString());
+                sym = new Sym(myType.getType());
                 table.addDecl(myId.toString(), sym);
-                fnSym.addFormals(myType.toString());
+                fnSym.addFormals(myType.getType());
             } catch (DuplicateSymException e) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
