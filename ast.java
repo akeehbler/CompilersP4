@@ -1119,11 +1119,6 @@ class DotAccessExpNode extends ExpNode {
 
     public void analyze(SymTable table){
         badDot = false;
-        System.out.println("Got here");
-        System.out.println(myLoc.getClass());
-        if(myLoc instanceof IdNode){
-            System.out.println(((IdNode)myLoc).getLineNum() + ":" + ((IdNode)myLoc).getCharNum());
-        }
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
@@ -1140,6 +1135,7 @@ class DotAccessExpNode extends ExpNode {
                 badDot = true;
             } else {
                 Sym locSym  = ((DotAccessExpNode)myLoc).getSym();
+                System.out.println(locSym.getType());
                 if (locSym == null) {
                     badDot = true;
                     //TODO: These might have to be the line and char num of the loc
