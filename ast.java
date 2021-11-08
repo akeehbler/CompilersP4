@@ -1069,8 +1069,8 @@ class DotAccessExpNode extends ExpNode {
             if (((DotAccessExpNode)myLoc).badDot) {
                 badDot = true;
             } else {
-                Sym locSym  = prev;
-                if (prev == null) {
+                Sym locSym  = ((DotAccessExpNode)myLoc).getSym();
+                if (locSym == null) {
                     badDot = true;
                     //TODO: These might have to be the line and char num of the loc
                     //ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
@@ -1078,7 +1078,7 @@ class DotAccessExpNode extends ExpNode {
                     if (locSym instanceof StructDefSym) {
                         structTable = ((StructDefSym)locSym).getTable();
                     } else {
-                        ErrMsg.fatal(myId.getCharNum(), myId.getCharNum(), "Unexpected Sym type in DotAccessExpNode");
+                        ErrMsg.fatal(myId.getCharNum(), myId.getCharNum(), "Dot-access pf non-struct type");
                         System.exit(-1);
                     }
                 }
@@ -1095,6 +1095,12 @@ class DotAccessExpNode extends ExpNode {
                 badDot = true;
             } else {
                 myId.addLink(foundSym);
+                if (foundSym == null) {
+                    System.out.println("Foundsym null");
+                } else {
+                    System.out.println(foundSym.toString());
+                }
+                System.out.println()
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
