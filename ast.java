@@ -1099,7 +1099,6 @@ class DotAccessExpNode extends ExpNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
                 badDot = true;
             } else {
-                // link the symbol?
                 myId.addLink(foundSym);
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right

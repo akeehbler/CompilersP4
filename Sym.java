@@ -42,7 +42,7 @@ class FnSym extends Sym {
         String format = "";
         if(getFormalsNum() != 0){
             for(int i = 0; i < getFormalsNum(); i++){
-                format += formals.get(i);
+                format += formals.get(i).toString();
                 if(i != getFormalsNum() - 1){
                     format += ", ";
                 }
