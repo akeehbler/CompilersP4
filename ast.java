@@ -1121,6 +1121,9 @@ class DotAccessExpNode extends ExpNode {
         badDot = false;
         System.out.println("Got here");
         System.out.println(myLoc.getClass());
+        if(myLoc instanceof IdNode){
+            System.println(((IdNode)myLoc).getLineNum() + ":" + ((IdNode)myLoc).getCharNum());
+        }
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null;
         if (myLoc instanceof IdNode) {
