@@ -349,7 +349,6 @@ class VarDeclNode extends DeclNode {
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
                 // TODO is this supposed to be globalTable.lookupGlobal????
-                System.out.println("here" + struct.toString());
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 // if its not create a new regular sym
@@ -1122,13 +1121,13 @@ class DotAccessExpNode extends ExpNode {
 
     public void analyze(SymTable table){
         badDot = false;
-
+        /*
         System.out.println(myLoc.getClass());
         if(myLoc instanceof DotAccessExpNode){
             System.out.println(((DotAccessExpNode)myLoc).getId().toString() + " middle");
         }
         System.out.println(myId.toString());
-
+        */
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null; // For RHS dot-access
 
@@ -1177,6 +1176,9 @@ class DotAccessExpNode extends ExpNode {
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
+                    if(((StructDeclSym)foundSym).getBody() == null){
+                        System.out.println(((StructDeclSym)foundSym).getType());
+                    }
                 } 
             }
         }
