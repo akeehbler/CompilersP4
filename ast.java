@@ -133,6 +133,9 @@ class ProgramNode extends ASTnode {
         myDeclList.unparse(p, indent);
     }
 
+    /*
+    * Analyze method for ProgramNode creates a new symbol table for the base scope.
+    */
     public void analyze() {
         SymTable table = new SymTable();
 		myDeclList.analyze(table);
@@ -159,12 +162,16 @@ class DeclListNode extends ASTnode {
         }
     }
 
+    // Default analyze
     public void analyze(SymTable table) {
         this.analyze(table, table);
     }
 
+    // If the node in our declList is of type VarDeclNode, we will want to pass
+    // in the global table as well as the current table in our scope
 	public void analyze(SymTable table, SymTable globalTab) {
-		for (DeclNode dn : myDecls) {
+		// Iterate through all the DeclNodes in the DeclList and run analysis
+        for (DeclNode dn : myDecls) {
             if (dn instanceof VarDeclNode) {
                 ((VarDeclNode)dn).analyze(table, globalTab);
             } else {
@@ -193,6 +200,7 @@ class FormalsListNode extends ASTnode {
         } 
     }
 
+    // Run analysis on every FormalDeclNode in the FormalListNode
     public void analyze(SymTable table, FnSym sym) {
         for (FormalDeclNode fdl : myFormals) {
             fdl.analyze(table, sym);
@@ -214,6 +222,8 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
+    // Analyze the DeclList in each FnBody
+    // Then analyze the statement list
     public void analyze(SymTable table) {
         myDeclList.analyze(table);
         myStmtList.analyze(table);
@@ -236,6 +246,7 @@ class StmtListNode extends ASTnode {
         }
     }
 
+    // Analyze each statement in the statement list
     public void analyze(SymTable table){
         for (StmtNode sn : myStmts) {
             sn.analyze(table);
@@ -262,6 +273,7 @@ class ExpListNode extends ASTnode {
         } 
     }
 
+    // Analyze each expression in the expression list
     public void analyze(SymTable table){
         for(ExpNode node : myExps){
             node.analyze(table);
@@ -277,7 +289,7 @@ class ExpListNode extends ASTnode {
 // **********************************************************************
 
 abstract class DeclNode extends ASTnode {
-		abstract public void analyze(SymTable table);
+	abstract public void analyze(SymTable table);
 }
 
 class VarDeclNode extends DeclNode {
@@ -295,10 +307,12 @@ class VarDeclNode extends DeclNode {
         p.println(";");
     }
 
+    // Need to have this to satisfy the abstract void analyze
     public void analyze(SymTable table) {
         this.analyze(table, table);
     }
 
+    // Analyze the VarDecl
 	public void analyze(SymTable table, SymTable globalTab) {
         Sym sym = null;
         IdNode struct = null;
@@ -310,14 +324,16 @@ class VarDeclNode extends DeclNode {
         // if it is a struct check if its an invalid name
         else if (myType instanceof StructNode) {
             struct = ((StructNode)myType).getId();
+            // use the globalTable to see if the structs name has been decalred
             sym = globalTab.lookupGlobal(struct.toString());
+            // if the name isn't found, or it is but its not the right type, fatal
             if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }
         }
 
-        // check for multiply declared
+        // check if the identifier has been declared before in this scope
         sym = null;
         sym = table.lookupLocal(myId.toString());
         if (sym != null) {
@@ -325,13 +341,18 @@ class VarDeclNode extends DeclNode {
             return;
         }
         
-        // if we havn't returned by now, it should be a good decl
+        // if we get to this point, should be a good decl
         try {
+            // check if its a struct
             if (myType instanceof StructNode) {
+                // if it is, create a new StructDeclSym
+                // TODO is this supposed to be globalTable.lookupGlobal????
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
+                // if its not create a new regular sym
                 sym = new Sym(myType.getType());
             }
+            // add it to our current symTable
             table.addDecl(myId.toString(), sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
@@ -377,6 +398,7 @@ class FnDeclNode extends DeclNode {
     }
 
     public void analyze(SymTable table) {
+        // Create a new FnSym that represents a function decl
         Sym sym = new FnSym(myType.getType());
         try {
             table.addDecl(myId.toString(), sym);
@@ -388,10 +410,14 @@ class FnDeclNode extends DeclNode {
             System.err.println(e.getMessage());
         }
 
+        // Add a scope to the current table (function body exists in its own scope)
         table.addScope();
+        // analyze the formals list, provide the table as well as the corresponding symbol
         myFormalsList.analyze(table, (FnSym)sym);
+        // finally, analyze the body of the funcion
         myBody.analyze(table);
 
+        // then we will want to close that scope.
         try {
             table.removeScope();
         } catch (EmptySymTableException e) {
@@ -418,9 +444,11 @@ class FormalDeclNode extends DeclNode {
         myId.unparse(p, 0);
     }
 
+    // this isn't used
     public void analyze(SymTable table) {}
 
     public void analyze(SymTable table, FnSym fnSym) {
+        // check if the type is of void
         if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
             return;
@@ -428,8 +456,11 @@ class FormalDeclNode extends DeclNode {
             try {
                 // this var doesnt get used, it is just to check to see if lookupLocal throws an exception
                 Sym sym = table.lookupLocal(myId.toString());
+                // create a new symbol
                 sym = new Sym(myType.getType());
+                // add it to the current scope
                 table.addDecl(myId.toString(), sym);
+                // add the formals to the function sym
                 fnSym.addFormals(myType.getType());
             } catch (DuplicateSymException e) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
@@ -467,9 +498,13 @@ class StructDeclNode extends DeclNode {
         try {
             // not used, just to look for duplicate sym
             Sym symCheck = table.lookupLocal(myId.toString());
+            // create a whole new table for this struct table
             SymTable structTable = new SymTable();
+            // analyze the declList in the struct
             myDeclList.analyze(structTable, table);
+            // then create a new symbol for the struct def
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
+            // and add it to the (global) symTable
             table.addDecl(myId.toString(), structDefSym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
@@ -575,6 +610,7 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the assignmentNode
         myAssign.analyze(table);
     }
 
@@ -595,6 +631,7 @@ class PreIncStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
     }
 
@@ -615,6 +652,7 @@ class PreDecStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
     }
 
@@ -635,6 +673,7 @@ class ReceiveStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
     }
 
@@ -655,6 +694,7 @@ class PrintStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
     }
 
@@ -681,10 +721,14 @@ class IfStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression first
         myExp.analyze(table);
+        // then add a scope
         table.addScope();
+        // analyze the decls followed by the statements
         myDeclList.analyze(table);
         myStmtList.analyze(table);
+        // finally remove the scope
         try{
             table.removeScope();
         } catch(EmptySymTableException ex){
@@ -693,7 +737,7 @@ class IfStmtNode extends StmtNode {
         }
     }
 
-    // e kids
+    // 3 kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -728,11 +772,15 @@ class IfElseStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // similar to the if, analyze the expression
         myExp.analyze(table);
+        // add the scope
         table.addScope();
+        // analyze the then declList and stmtList
         myThenDeclList.analyze(table);
         myThenStmtList.analyze(table);
 
+        // close the scope
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
@@ -740,10 +788,13 @@ class IfElseStmtNode extends StmtNode {
             System.exit(-1);
         }
 
+        // add a new scope for the else
         table.addScope();
+        // analyze the declList and stmtList
         myElseDeclList.analyze(table);
         myElseStmtList.analyze(table);
 
+        // close the scope
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
@@ -779,10 +830,14 @@ class WhileStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
+        // add a scope
         table.addScope();
+        // analyze the declList and stmtList
         myDeclList.analyze(table);
         myStmtList.analyze(table);
+        // close the scope
         try{
             table.removeScope();
         } catch(EmptySymTableException ex) {
@@ -815,10 +870,14 @@ class RepeatStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
+        // open a new scope
         table.addScope();
+        // analyze the declList and stmtList
         myDeclList.analyze(table);
         myStmtList.analyze(table);
+        // close the scope
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
@@ -845,6 +904,7 @@ class CallStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the call expression
         myCall.analyze(table);
     }
 
@@ -868,8 +928,9 @@ class ReturnStmtNode extends StmtNode {
     }
 
     public void analyze(SymTable table){
-        //Check for null since it can be Null
+        // Check for null since it can be Null
         if(myExp != null){
+            // if not, analyze the expression
             myExp.analyze(table);
         }
     }
@@ -990,6 +1051,7 @@ class IdNode extends ExpNode {
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
         if (this.link != null) {
+            // print out the sym name with each IdNode
             p.print("(" + link + ")");
             
         }
@@ -1012,10 +1074,13 @@ class IdNode extends ExpNode {
     }
     
     public void analyze(SymTable table) {
+        // see if the symbol is in the table
         Sym foundSym = table.lookupGlobal(myStrVal);
+        // if its not, its undeclared
         if (foundSym == null) {
             ErrMsg.fatal(this.myLineNum, this.myCharNum, "Undeclared identifier");
         } else {
+            // otherwise link to it
             addLink(foundSym);
         }        
     }
@@ -1132,6 +1197,7 @@ class AssignNode extends ExpNode {
     }
     
     public void analyze(SymTable table){
+        // analyze the both expressions
         myLhs.analyze(table);
         myExp.analyze(table);
     }
@@ -1161,6 +1227,8 @@ class CallExpNode extends ExpNode {
         }
         p.print(")");
     }
+
+    // analyze the expression
     public void analyze(SymTable table){
         myId.analyze(table);
         if(myExpList != null){
@@ -1179,6 +1247,7 @@ abstract class UnaryExpNode extends ExpNode {
     }
 
     public void analyze(SymTable table){
+        // analyze the expression
         myExp.analyze(table);
     }
     // one child
@@ -1192,6 +1261,7 @@ abstract class BinaryExpNode extends ExpNode {
     }
     
     public void analyze(SymTable table){
+        // analyze both expressions
         myExp1.analyze(table);
         myExp2.analyze(table);
     }

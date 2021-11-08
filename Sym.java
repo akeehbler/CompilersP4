@@ -1,6 +1,9 @@
 import java.util.List;
 import java.util.ArrayList;
 
+/*
+* This class represents a symbol in our SymTable 
+*/
 public class Sym {
     private String type;
 
@@ -17,6 +20,9 @@ public class Sym {
     }
 }
 
+/*
+* FnSym represents a symbol entry for a funciton node.
+*/
 class FnSym extends Sym {
     private List<String> formals;
     private String retType;
@@ -39,6 +45,10 @@ class FnSym extends Sym {
         return retType;
     }
 
+    /*
+    * Override the toString() method to make unparsing printout 
+    * more simple.
+    */
     public String toString(){
         String format = "";
         if(getFormalsNum() != 0){
@@ -55,6 +65,9 @@ class FnSym extends Sym {
 
 }
 
+/*
+* This class represents a symbol entry for a struct declaration.
+*/
 class StructDeclSym extends Sym {
 
     private StructDefSym body;
@@ -69,6 +82,9 @@ class StructDeclSym extends Sym {
      
 }
 
+/*
+* This class represents a symbol entry for a struct definition.
+*/
 class StructDefSym extends Sym {
 
     private SymTable table;
