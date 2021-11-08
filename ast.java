@@ -1095,19 +1095,9 @@ class DotAccessExpNode extends ExpNode {
                 badDot = true;
             } else {
                 myId.addLink(foundSym);
-                if (foundSym == null) {
-                    System.out.println("Foundsym null");
-                } else {
-                    System.out.println(foundSym.toString());
-                }
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
-                    if (prev == null) {
-                        System.out.println("prev is null");
-                    } else {
-                        System.out.println(prev.toString());
-                    }
                 } 
             }
         }
