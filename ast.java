@@ -356,6 +356,7 @@ class VarDeclNode extends DeclNode {
                 sym = new Sym(myType.getType());
             }
             // add it to our current symTable
+            System.out.println("poop " + myId.toString());
             table.addDecl(myId.toString(), sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
