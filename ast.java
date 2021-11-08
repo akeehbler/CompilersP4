@@ -331,9 +331,7 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }else{
-               if(!table.equals(globalTab)){
-                   struct.addLink(sym);
-               }
+               //
             }
         }
 
@@ -1123,8 +1121,11 @@ class DotAccessExpNode extends ExpNode {
 
     public void analyze(SymTable table){
         badDot = false;
+        System.out.println(myLoc.getClass());
+        System.out.println(myId.toString());
         myLoc.analyze(table); // analyze on the LHS
-        SymTable structTable = null;
+        SymTable structTable = null; // For RHS dot-access
+
         if (myLoc instanceof IdNode) {
             Sym idSym = ((IdNode)myLoc).getSym();
             if (idSym == null) {
