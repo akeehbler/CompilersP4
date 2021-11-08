@@ -333,11 +333,12 @@ class VarDeclNode extends DeclNode {
         try {
             if (myType instanceof StructNode) {
                 // TODO Fix this
+                System.out.println(struct.toString() + " herere");
+                System.out.println(myId.toString());
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(myId.toString())), ((StructNode)myType).getType().toString());
             } else {
                 sym = new Sym(myType.getType());
             }
-            System.out.println(myId.toString() + "peepee");
             table.addDecl(myId.toString(), sym);
             //TODO: Do we actually link here?
             myId.addLink(sym);
