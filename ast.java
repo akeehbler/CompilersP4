@@ -1038,6 +1038,7 @@ class DotAccessExpNode extends ExpNode {
     public DotAccessExpNode(ExpNode loc, IdNode id) {
         myLoc = loc;    
         myId = id;
+        prev = null;
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -1097,6 +1098,11 @@ class DotAccessExpNode extends ExpNode {
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
                     prev = ((StructDeclSym)foundSym).getBody();
+                    if (prev == null) {
+                        System.out.println("prev is null");
+                    } else {
+                        System.out.println(prev.toString());
+                    }
                 } 
             }
         }
