@@ -315,10 +315,6 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }
-            /*else{
-                //TODO: Do we actually link here or somewhere else?
-                struct.addLink(sym);
-            }*/
         }
 
         // check for multiply declared
@@ -475,7 +471,7 @@ class StructDeclNode extends DeclNode {
             myDeclList.analyze(structTable, table);
             StructDefSym structDefSym = new StructDefSym(structTable, myId.toString());
             table.addDecl(myId.toString(), structDefSym);
-            myId.addLink(structDefSym);
+            //myId.addLink(structDefSym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
