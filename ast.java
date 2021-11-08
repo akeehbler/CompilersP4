@@ -330,6 +330,8 @@ class VarDeclNode extends DeclNode {
             if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
+            }else{
+               //table.add
             }
         }
 
@@ -347,6 +349,7 @@ class VarDeclNode extends DeclNode {
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
                 // TODO is this supposed to be globalTable.lookupGlobal????
+                System.out.println(struct.toString());
                 sym = new StructDeclSym((StructDefSym)(table.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 // if its not create a new regular sym
@@ -1140,7 +1143,6 @@ class DotAccessExpNode extends ExpNode {
                     //TODO: These might have to be the line and char num of the loc
                     //ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 } else {
-                    System.out.println(locSym.getType());
                     if (locSym instanceof StructDefSym) {
                         structTable = ((StructDefSym)locSym).getTable();
                     } else {
