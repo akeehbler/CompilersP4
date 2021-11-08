@@ -331,6 +331,9 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }
+            else{
+                struct.addLink(sym);
+            }
         }
 
         // check if the identifier has been declared before in this scope
