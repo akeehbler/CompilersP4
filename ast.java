@@ -1121,20 +1121,24 @@ class DotAccessExpNode extends ExpNode {
 
     public void analyze(SymTable table){
         badDot = false;
+
         System.out.println(myLoc.getClass());
         if(myLoc instanceof DotAccessExpNode){
             System.out.println(((DotAccessExpNode)myLoc).getId().toString() + " middle");
         }
         System.out.println(myId.toString());
+
         myLoc.analyze(table); // analyze on the LHS
         SymTable structTable = null; // For RHS dot-access
 
+        // Check if myLoc is an IdNode, if it is then Idsym will be a link
         if (myLoc instanceof IdNode) {
             Sym idSym = ((IdNode)myLoc).getSym();
             if (idSym == null) {
                 badDot = true;
-            } else if (idSym instanceof StructDeclSym) {
+            } else if (idSym instanceof StructDeclSym) { //Check is Id is declared of structType
                 structTable = ((StructDeclSym)idSym).getBody().getTable();
+                structTable.print();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
             }
