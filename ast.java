@@ -315,10 +315,10 @@ class VarDeclNode extends DeclNode {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
             }
-            else{
+            /*else{
                 //TODO: Do we actually link here or somewhere else?
                 struct.addLink(sym);
-            }
+            }*/
         }
 
         // check for multiply declared
@@ -337,8 +337,6 @@ class VarDeclNode extends DeclNode {
                 sym = new Sym(myType.getType());
             }
             table.addDecl(myId.toString(), sym);
-            //TODO: Do we actually link here?
-            //myId.addLink(sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
             System.exit(-1);
