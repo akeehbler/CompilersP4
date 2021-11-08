@@ -1128,7 +1128,6 @@ class DotAccessExpNode extends ExpNode {
             if (idSym == null) {
                 badDot = true;
             } else if (idSym instanceof StructDeclSym) {
-                System.out.println(idSym.toString() + " boast");
                 structTable = ((StructDeclSym)idSym).getBody().getTable();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
@@ -1141,7 +1140,7 @@ class DotAccessExpNode extends ExpNode {
                 if (locSym == null) {
                     badDot = true;
                     //TODO: These might have to be the line and char num of the loc
-                    //ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
+                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 } else {
                     if (locSym instanceof StructDefSym) {
                         structTable = ((StructDefSym)locSym).getTable();
@@ -1157,7 +1156,6 @@ class DotAccessExpNode extends ExpNode {
         }
 
         if (!badDot) {
-            System.out.println(myId.toString() + " toast");
             Sym foundSym = structTable.lookupGlobal(myId.toString());
             if (foundSym == null) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
@@ -1166,7 +1164,7 @@ class DotAccessExpNode extends ExpNode {
                 myId.addLink(foundSym);
                 if (foundSym instanceof StructDeclSym) {
                     //TODO: Might be right
-                    prev = structTable.lookupGlobal(((StructDeclSym)foundSym).getBody().getType());
+                    prev = ((StructDeclSym)foundSym).getBody();
                 } 
             }
         }
