@@ -1166,7 +1166,6 @@ class DotAccessExpNode extends ExpNode {
         Sym foundSym = structTable.lookupGlobal(myId.toString());
         if (foundSym == null) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
-            badDot = true;
         } else {
             // Link the symbol
             myId.addLink(foundSym);
