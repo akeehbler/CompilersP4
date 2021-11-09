@@ -1129,50 +1129,51 @@ class DotAccessExpNode extends ExpNode {
         myLoc.analyze(table);
         // declare a SymTable for a possible RHS dod-access
         SymTable structTable = null;
+        // declare a sym used for checking
+        Sym sym = null;
         // Check if myLoc is an IdNode, if it is then Idsym will be a link
         if (myLoc instanceof IdNode) {
-            Sym idSym = ((IdNode)myLoc).getSym();
+            sym = ((IdNode)myLoc).getSym();
             // If it is null then return
-            if (idSym == null) {
+            if (sym == null) {
                 return;
-            } else if (idSym instanceof StructDeclSym) { 
-                // if idSym is a StructDeclSym, get the symTable for it
-                structTable = ((StructDeclSym)idSym).getBody().getTable();
+            } else if (sym instanceof StructDeclSym) { 
+                // if sym is a StructDeclSym, get the symTable for it
+                structTable = ((StructDeclSym)sym).getBody().getTable();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
             }
         } else if (myLoc instanceof DotAccessExpNode) {
-
-            if (((DotAccessExpNode)myLoc).getSym() == null) {
+            sym  = ((DotAccessExpNode)myLoc).getSym();
+            // if there is no prev sym, then it was a bad access
+            if (sym == null) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 return;
             } else {
-                Sym locSym  = ((DotAccessExpNode)myLoc).getSym();
-                if (locSym == null) {
-                    ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
+                // if myLoc is a StructDefSym
+                if (sym instanceof StructDefSym) {
+                    // get the corresponding table
+                    structTable = ((StructDefSym)sym).getTable();
                 } else {
-                    if (locSym instanceof StructDefSym) {
-                        structTable = ((StructDefSym)locSym).getTable();
-                    } else {
-                        ErrMsg.fatal(myId.getCharNum(), myId.getCharNum(), "Dot-access pf non-struct type");
-                    }
+                    // if it wasn't, throw a fatal message
+                    ErrMsg.fatal(myId.getCharNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 }
             }
         } else {
             System.err.println("Unexpected node type in LHS of dot-access");
             System.exit(-1);
         }
-
         // If we get to this point in the code, then the symbol is valid
-        Sym foundSym = structTable.lookupGlobal(myId.toString());
-        if (foundSym == null) {
+        sym = structTable.lookupGlobal(myId.toString());
+        if (sym == null) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
         } else {
             // Link the symbol
-            myId.addLink(foundSym);
+            myId.addLink(sym);
             // If the RHS is a struct, we want to do chained access
-            if (foundSym instanceof StructDeclSym) {
-                // get the prev
-                prev = ((StructDeclSym)foundSym).getBody();
+            if (sym instanceof StructDeclSym) {
+                // store the previous sym
+                prev = ((StructDeclSym)sym).getBody();
             } 
         }
     }
