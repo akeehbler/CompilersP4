@@ -1142,6 +1142,7 @@ class DotAccessExpNode extends ExpNode {
                 structTable = ((StructDeclSym)sym).getBody().getTable();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
+                return;
             }
         } else if (myLoc instanceof DotAccessExpNode) {
             sym  = ((DotAccessExpNode)myLoc).getSym();
