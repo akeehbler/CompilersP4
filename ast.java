@@ -157,7 +157,7 @@ class DeclListNode extends ASTnode {
                 ((DeclNode)it.next()).unparse(p, indent);
             }
         } catch (NoSuchElementException ex) {
-            System.err.println("unexpected NoSuchElementException in DeclListNode.print");
+            System.err.println("unexpected NoSuchElementException in DeclListNode");
             System.exit(-1);
         }
     }
@@ -348,7 +348,6 @@ class VarDeclNode extends DeclNode {
             // check if its a struct
             if (myType instanceof StructNode) {
                 // if it is, create a new StructDeclSym
-                // TODO is this supposed to be globalTable.lookupGlobal????
                 sym = new StructDeclSym((StructDefSym)(globalTab.lookupGlobal(struct.toString())), struct.toString());
             } else {
                 // if its not create a new regular sym
@@ -358,7 +357,6 @@ class VarDeclNode extends DeclNode {
             table.addDecl(myId.toString(), sym);
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
-            System.exit(-1);
         } catch (EmptySymTableException e) {
             System.err.println("Unexpected EmptySymTableException in VarDeclNode analysis");
             System.exit(-1);
@@ -407,9 +405,11 @@ class FnDeclNode extends DeclNode {
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
-            System.err.println("Undefined Scope in FnDeclNode analysis.");
+            System.err.println("Undefined Scope in FnDeclNode analysis");
+            System.exit(-1);
         } catch (WrongArgumentException e){
             System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         // Add a scope to the current table (function body exists in its own scope)
@@ -423,7 +423,8 @@ class FnDeclNode extends DeclNode {
         try {
             table.removeScope();
         } catch (EmptySymTableException e) {
-            System.err.println("No scope defined.");
+            System.err.println("No scope defined in FnDeclNode");
+            System.exit(-1);
         }
     }
 
@@ -467,9 +468,11 @@ class FormalDeclNode extends DeclNode {
             } catch (DuplicateSymException e) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
             } catch (EmptySymTableException e) {
-                System.err.println("Undefined scope.");
+                System.err.println("Undefined scope in FormalDeclNode");
+                System.exit(-1);
             } catch (WrongArgumentException e) {
                 System.err.println(e.getMessage());
+                System.exit(-1);
             }
         }
     }
@@ -511,9 +514,11 @@ class StructDeclNode extends DeclNode {
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
         } catch (EmptySymTableException e) {
-            System.err.println("Undefined scope.");
+            System.err.println("Undefined scope in StructDeclNode");
+            System.exit(-1);
         } catch (WrongArgumentException e) {
             System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
     }
@@ -734,7 +739,7 @@ class IfStmtNode extends StmtNode {
         try{
             table.removeScope();
         } catch(EmptySymTableException ex){
-            System.err.println("Undefined Scope in IfStmtNode analysis.");
+            System.err.println("Undefined Scope in IfStmtNode analysis");
             System.exit(-1);
         }
     }
@@ -843,7 +848,7 @@ class WhileStmtNode extends StmtNode {
         try{
             table.removeScope();
         } catch(EmptySymTableException ex) {
-            System.err.println("Undefined Scope in WhileStmtNode analysis.");
+            System.err.println("Undefined Scope in WhileStmtNode analysis");
             System.exit(-1);
         }
     }
@@ -883,7 +888,7 @@ class RepeatStmtNode extends StmtNode {
         try{
             table.removeScope();
         }catch(EmptySymTableException ex){
-            System.err.println("Undefined Scope in RepeatStmtNode analysis.");
+            System.err.println("Undefined Scope in RepeatStmtNode analysis");
             System.exit(-1);
         }
     }
@@ -1120,34 +1125,35 @@ class DotAccessExpNode extends ExpNode {
     }
 
     public void analyze(SymTable table){
-        badDot = false;
-        myLoc.analyze(table); // analyze on the LHS
-        SymTable structTable = null; // For RHS dot-access
-
+        // analyze on the LHS first
+        myLoc.analyze(table);
+        // declare a SymTable for a possible RHS dod-access
+        SymTable structTable = null;
         // Check if myLoc is an IdNode, if it is then Idsym will be a link
         if (myLoc instanceof IdNode) {
             Sym idSym = ((IdNode)myLoc).getSym();
+            // If it is null then return
             if (idSym == null) {
-                badDot = true;
-            } else if (idSym instanceof StructDeclSym) { //Check is Id is declared of structType
+                return;
+            } else if (idSym instanceof StructDeclSym) { 
+                // if idSym is a StructDeclSym, get the symTable for it
                 structTable = ((StructDeclSym)idSym).getBody().getTable();
             } else {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
             }
         } else if (myLoc instanceof DotAccessExpNode) {
-            if (((DotAccessExpNode)myLoc).badDot) {
-                badDot = true;
+
+            if (((DotAccessExpNode)myLoc).getSym() == null) {
+                return;
             } else {
                 Sym locSym  = ((DotAccessExpNode)myLoc).getSym();
                 if (locSym == null) {
-                    badDot = true;
                     ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Dot-access of non-struct type");
                 } else {
                     if (locSym instanceof StructDefSym) {
                         structTable = ((StructDefSym)locSym).getTable();
                     } else {
                         ErrMsg.fatal(myId.getCharNum(), myId.getCharNum(), "Dot-access pf non-struct type");
-                        System.exit(-1);
                     }
                 }
             }
@@ -1156,21 +1162,19 @@ class DotAccessExpNode extends ExpNode {
             System.exit(-1);
         }
 
-        if (!badDot) {
-            //lookup the rhs
-            Sym foundSym = structTable.lookupGlobal(myId.toString());
-            if (foundSym == null) {
-                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
-                badDot = true;
-            } else {
-                myId.addLink(foundSym); //link the symbol since it was used
-                // Check if RHS is a struct, if it is then need to add this to allow chained
-                //Dot accesess
-                if (foundSym instanceof StructDeclSym) {
-                    //get the prev
-                    prev = ((StructDeclSym)foundSym).getBody();
-                } 
-            }
+        // If we get to this point in the code, then the symbol is valid
+        Sym foundSym = structTable.lookupGlobal(myId.toString());
+        if (foundSym == null) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid struct field name");
+            badDot = true;
+        } else {
+            // Link the symbol
+            myId.addLink(foundSym);
+            // If the RHS is a struct, we want to do chained access
+            if (foundSym instanceof StructDeclSym) {
+                // get the prev
+                prev = ((StructDeclSym)foundSym).getBody();
+            } 
         }
     }
 
@@ -1184,7 +1188,6 @@ class DotAccessExpNode extends ExpNode {
     private ExpNode myLoc;    
     private IdNode myId;
     private Sym prev;
-    private boolean badDot;
 }
 
 class AssignNode extends ExpNode {
