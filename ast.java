@@ -1157,12 +1157,15 @@ class DotAccessExpNode extends ExpNode {
                 } else {
                     // if it wasn't, throw a fatal message
                     ErrMsg.fatal(myId.getCharNum(), myId.getCharNum(), "Dot-access of non-struct type");
+                    return;
                 }
             }
         } else {
             System.err.println("Unexpected node type in LHS of dot-access");
             System.exit(-1);
         }
+
+
         // If we get to this point in the code, then the symbol is valid
         sym = structTable.lookupGlobal(myId.toString());
         if (sym == null) {
