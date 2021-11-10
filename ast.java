@@ -316,6 +316,12 @@ class VarDeclNode extends DeclNode {
 	public void analyze(SymTable table, SymTable globalTab) {
         Sym sym = null;
         IdNode struct = null;
+        // Multiply Declared Check
+        sym = table.lookupLocal(myId.toString());
+        if (sym != null) {
+            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+        }
+        
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -330,17 +336,7 @@ class VarDeclNode extends DeclNode {
             if (sym == null || !(sym instanceof StructDefSym)) {
                 ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Invalid name of struct type");
                 return;
-            }else{
-               //
             }
-        }
-
-        // check if the identifier has been declared before in this scope
-        sym = null;
-        sym = table.lookupLocal(myId.toString());
-        if (sym != null) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
-            return;
         }
         
         // if we get to this point, should be a good decl
