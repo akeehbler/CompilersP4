@@ -316,12 +316,14 @@ class VarDeclNode extends DeclNode {
 	public void analyze(SymTable table, SymTable globalTab) {
         Sym sym = null;
         IdNode struct = null;
+        bool multDecl = false;
         // Multiply Declared Check
         sym = table.lookupLocal(myId.toString());
         if (sym != null) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
+            multDecl = true;
         }
-        
+
         // void check
 		if (myType instanceof VoidNode) {
             ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
@@ -339,26 +341,29 @@ class VarDeclNode extends DeclNode {
             }
         }
         
-        // if we get to this point, should be a good decl
-        try {
-            // check if its a struct
-            if (myType instanceof StructNode) {
-                // if it is, create a new StructDeclSym
-                sym = new StructDeclSym((StructDefSym)(globalTab.lookupGlobal(struct.toString())), struct.toString());
-            } else {
-                // if its not create a new regular sym
-                sym = new Sym(myType.getType());
+        // only be adding if its not multiply declared. but we still want to continue the other checks beforehand
+        if (multDecl == false) {
+            // if we get to this point, should be a good decl
+            try {
+                // check if its a struct
+                if (myType instanceof StructNode) {
+                    // if it is, create a new StructDeclSym
+                    sym = new StructDeclSym((StructDefSym)(globalTab.lookupGlobal(struct.toString())), struct.toString());
+                } else {
+                    // if its not create a new regular sym
+                    sym = new Sym(myType.getType());
+                }
+                // add it to our current symTable
+                table.addDecl(myId.toString(), sym);
+            } catch (DuplicateSymException e) {
+                ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
+            } catch (EmptySymTableException e) {
+                System.err.println("Unexpected EmptySymTableException in VarDeclNode analysis");
+                System.exit(-1);
+            } catch (WrongArgumentException e) {
+                System.err.println(e.getMessage());
+                System.exit(-1);
             }
-            // add it to our current symTable
-            table.addDecl(myId.toString(), sym);
-        } catch (DuplicateSymException e) {
-            ErrMsg.fatal(myId.getLineNum(), myId.getCharNum(), "Unexpected DuplicateSymException in VarDeclNode analysis");
-        } catch (EmptySymTableException e) {
-            System.err.println("Unexpected EmptySymTableException in VarDeclNode analysis");
-            System.exit(-1);
-        } catch (WrongArgumentException e) {
-            System.err.println(e.getMessage());
-            System.exit(-1);
         }
     }
 
