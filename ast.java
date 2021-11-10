@@ -316,7 +316,7 @@ class VarDeclNode extends DeclNode {
 	public void analyze(SymTable table, SymTable globalTab) {
         Sym sym = null;
         IdNode struct = null;
-        bool multDecl = false;
+        boolean multDecl = false;
         // Multiply Declared Check
         sym = table.lookupLocal(myId.toString());
         if (sym != null) {
